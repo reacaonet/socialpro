@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "1008060368698",
+    "firebase_url": "https://itamidia-iptv.firebaseio.com",
+    "project_id": "itamidia-iptv",
+    "storage_bucket": "itamidia-iptv.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1008060368698:android:42057146c5cfc462dc7203",
+        "android_client_info": {
+          "package_name": "com.reacaonet.playtv"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1008060368698-j5juoeefq57tfpl4jdqmjes1kl34fo42.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHbghKmFw9K_J8Wmhfx-lZo8sDdizdRsA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1008060368698-j5juoeefq57tfpl4jdqmjes1kl34fo42.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
