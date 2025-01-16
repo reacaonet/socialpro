@@ -266,14 +266,14 @@ export default function PostManager() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-2 text-gray-500 hover:text-primary"
+                  className="p-2 text-white bg-primary hover:bg-primary-dark rounded-full transition-colors duration-200"
                 >
                   <BsImage className="w-5 h-5" />
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="p-2 text-gray-500 hover:text-primary"
+                  className="p-2 text-white bg-primary hover:bg-primary-dark rounded-full transition-colors duration-200"
                 >
                   <BsEmojiSmile className="w-5 h-5" />
                 </button>

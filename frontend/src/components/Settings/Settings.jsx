@@ -33,7 +33,7 @@ function NotificationsSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Notificações</h3>
+        <h3 className="text-lg font-medium leading-6 text-primary">Notificações</h3>
         <p className="mt-1 text-sm text-gray-500">
           Decida quais notificações você deseja receber.
         </p>
@@ -73,7 +73,7 @@ function SecuritySettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Segurança</h3>
+        <h3 className="text-lg font-medium leading-6 text-primary">Segurança</h3>
         <p className="mt-1 text-sm text-gray-500">
           Gerencie suas configurações de segurança e autenticação.
         </p>
@@ -119,9 +119,9 @@ function SecuritySettings() {
         <div className="pt-4">
           <button
             type="button"
-            className="inline-flex justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            className="inline-flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
           >
-            Atualizar Senha
+            Alterar Senha
           </button>
         </div>
       </div>
@@ -147,7 +147,7 @@ function SocialSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Redes Sociais</h3>
+        <h3 className="text-lg font-medium leading-6 text-primary">Redes Sociais</h3>
         <p className="mt-1 text-sm text-gray-500">
           Conecte suas redes sociais para gerenciar suas publicações.
         </p>
@@ -164,12 +164,7 @@ function SocialSettings() {
             <button
               type="button"
               onClick={() => handleConnect(platform)}
-              className={classNames(
-                isConnected
-                  ? 'bg-primary text-white hover:bg-primary-dark'
-                  : 'bg-white text-gray-700 hover:bg-gray-50',
-                'inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary'
-              )}
+              className="inline-flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
               {isConnected ? 'Conectado' : 'Conectar'}
             </button>
@@ -184,7 +179,7 @@ function BillingSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium leading-6 text-gray-900">Plano e Pagamento</h3>
+        <h3 className="text-lg font-medium leading-6 text-primary">Plano e Pagamento</h3>
         <p className="mt-1 text-sm text-gray-500">
           Gerencie seu plano e informações de pagamento.
         </p>
@@ -192,14 +187,14 @@ function BillingSettings() {
 
       <div className="bg-white shadow sm:rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Plano Atual</h3>
+          <h3 className="text-lg font-medium leading-6 text-primary">Plano Atual</h3>
           <div className="mt-2 max-w-xl text-sm text-gray-500">
             <p>Plano Básico - $9.99/mês</p>
           </div>
           <div className="mt-5">
             <button
               type="button"
-              className="inline-flex justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="inline-flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
               Atualizar Plano
             </button>
@@ -209,14 +204,14 @@ function BillingSettings() {
 
       <div className="bg-white shadow sm:rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">Método de Pagamento</h3>
+          <h3 className="text-lg font-medium leading-6 text-primary">Método de Pagamento</h3>
           <div className="mt-2 max-w-xl text-sm text-gray-500">
             <p>•••• •••• •••• 4242</p>
           </div>
           <div className="mt-5">
             <button
               type="button"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="inline-flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
               Atualizar Método de Pagamento
             </button>
@@ -231,47 +226,47 @@ import { useState } from 'react';
 
 export default function Settings() {
   return (
-    <div className="pl-64 pt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-              Configurações
-            </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Gerencie suas preferências e configurações da conta.
-            </p>
-          </div>
+    <div className="grid gap-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Configurações
+        </h2>
+        <p className="mt-1 text-sm text-gray-500">
+          Gerencie suas preferências e configurações da conta.
+        </p>
+      </div>
 
+      <div className="bg-white shadow sm:rounded-lg">
+        <div className="p-6">
           <Tab.Group>
-            <div className="border-b border-gray-200">
-              <Tab.List className="-mb-px flex space-x-8">
-                {tabs.map((tab) => (
-                  <Tab
-                    key={tab.name}
-                    className={({ selected }) =>
-                      classNames(
-                        selected
-                          ? 'border-primary bg-primary text-white'
-                          : 'border-transparent text-gray-700 hover:text-primary hover:border-primary',
-                        'group inline-flex items-center py-4 px-4 border-b-2 font-medium text-sm transition-colors duration-200'
-                      )
-                    }
-                  >
-                    <tab.icon className={classNames(
-                      'mr-2 h-5 w-5',
-                      'transition-colors duration-200'
-                    )} />
-                    {tab.name}
-                  </Tab>
-                ))}
-              </Tab.List>
-            </div>
-            <Tab.Panels className="mt-6 bg-white rounded-lg shadow">
+            <Tab.List className="flex space-x-1 rounded-xl bg-gray-100 p-1">
+              {tabs.map((tab) => (
+                <Tab
+                  key={tab.name}
+                  className={({ selected }) =>
+                    classNames(
+                      'w-full py-3 px-6 text-sm font-medium leading-5 rounded-lg',
+                      'focus:outline-none focus:ring-2 ring-offset-2 ring-offset-primary ring-white ring-opacity-60',
+                      selected
+                        ? 'bg-primary text-white shadow'
+                        : 'text-gray-700 hover:bg-gray-200'
+                    )
+                  }
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <tab.icon className="h-5 w-5" />
+                    <span>{tab.name}</span>
+                  </div>
+                </Tab>
+              ))}
+            </Tab.List>
+
+            <Tab.Panels className="mt-6">
               {tabs.map((tab, idx) => (
-                <Tab.Panel 
+                <Tab.Panel
                   key={idx}
-                  className="p-6"
+                  className="focus:outline-none"
                 >
                   <tab.component />
                 </Tab.Panel>
