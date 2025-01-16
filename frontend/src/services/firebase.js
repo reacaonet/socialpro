@@ -4,13 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDHbghKmFw9K_J8Wmhfx-lZo8sDdizdRsA",
-  authDomain: "itamidia-iptv.firebaseapp.com",
-  databaseURL: "https://itamidia-iptv.firebaseio.com",
-  projectId: "itamidia-iptv",
-  storageBucket: "itamidia-iptv.firebasestorage.app",
-  messagingSenderId: "1008060368698",
-  appId: "1:1008060368698:android:42057146c5cfc462dc7203"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);
