@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-import { getLinkedInToken, getLinkedInUserInfo } from '../../services/linkedin';
+import { getLinkedInToken, getLinkedInUserInfo, getLinkedInCompanyPages } from '../../services/linkedin';
+import { toast } from 'react-hot-toast';
 
 export default function LinkedInCallback() {
   const navigate = useNavigate();
@@ -31,28 +32,40 @@ export default function LinkedInCallback() {
           // Obtém informações do usuário
           const userInfo = await getLinkedInUserInfo(tokenData.access_token);
 
+          // Obtém páginas da empresa
+          const companyPages = await getLinkedInCompanyPages(tokenData.access_token);
+
           // Salva as informações no Firestore
           const userRef = doc(db, 'users', user.uid);
           await updateDoc(userRef, {
-            'connections.linkedin': true,
-            'socialAccounts.linkedin': {
+            'socialConnections.linkedin': {
               accessToken: tokenData.access_token,
               expiresIn: tokenData.expires_in,
-              userID: userInfo.id,
-              firstName: userInfo.localizedFirstName,
-              lastName: userInfo.localizedLastName,
-              email: userInfo.email
+              refreshToken: tokenData.refresh_token,
+              connectedAt: new Date().toISOString(),
+              userInfo: {
+                id: userInfo.id,
+                firstName: userInfo.firstName,
+                lastName: userInfo.lastName,
+                email: userInfo.email,
+                profilePicture: userInfo.profilePicture
+              },
+              companyPages: companyPages
             }
           });
 
           // Limpa o state do localStorage
           localStorage.removeItem('linkedin_state');
 
+          // Notifica o usuário
+          toast.success('LinkedIn conectado com sucesso!');
+
           // Redireciona de volta para o dashboard
           navigate('/dashboard', { replace: true });
         }
       } catch (error) {
         console.error('Error handling LinkedIn callback:', error);
+        toast.error('Erro ao conectar com LinkedIn: ' + error.message);
         navigate('/dashboard', { replace: true });
       }
     };

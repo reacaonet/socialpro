@@ -1,10 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Tab } from '@headlessui/react';
 import { useAuth } from '../../contexts/AuthContext';
-import { BellIcon, KeyIcon, UserCircleIcon, ShieldCheckIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { 
+  BellIcon, 
+  KeyIcon, 
+  UserCircleIcon, 
+  ShieldCheckIcon, 
+  BuildingOfficeIcon,
+  ShareIcon
+} from '@heroicons/react/24/outline';
+import { useCompany } from '../../hooks/useCompany';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { toast } from 'react-hot-toast';
+import SocialMediaTab from './SocialMediaTab';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -13,6 +22,7 @@ function classNames(...classes) {
 const tabs = [
   { name: 'Perfil', icon: UserCircleIcon },
   { name: 'Empresa', icon: BuildingOfficeIcon },
+  { name: 'Redes Sociais', icon: ShareIcon },
   { name: 'Notificações', icon: BellIcon },
   { name: 'Segurança', icon: ShieldCheckIcon },
   { name: 'Privacidade', icon: KeyIcon },
@@ -21,68 +31,18 @@ const tabs = [
 export default function Settings() {
   const [selectedTab, setSelectedTab] = useState(0);
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [companyData, setCompanyData] = useState({
-    name: '',
-    website: '',
-    industry: '',
-    size: '',
-    description: ''
-  });
+  const { 
+    companyData, 
+    loading: companyLoading, 
+    errors: companyErrors, 
+    handleChange: handleCompanyChange, 
+    saveCompany 
+  } = useCompany(user?.uid);
 
-  useEffect(() => {
-    const loadCompanyData = async () => {
-      if (!user?.uid) return;
-      
-      try {
-        setLoading(true);
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          if (userData.company) {
-            setCompanyData(prev => ({
-              ...prev,
-              ...userData.company
-            }));
-          }
-        }
-      } catch (error) {
-        console.error('Error loading company data:', error);
-        toast.error('Erro ao carregar dados da empresa');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadCompanyData();
-  }, [user]);
-
-  const handleCompanyChange = (e) => {
-    const { name, value } = e.target;
-    setCompanyData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleCompanySubmit = async (e) => {
+  const handleCompanySubmit = useCallback(async (e) => {
     e.preventDefault();
-    
-    try {
-      setLoading(true);
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        company: companyData
-      });
-      toast.success('Dados da empresa atualizados com sucesso!');
-    } catch (error) {
-      console.error('Error updating company data:', error);
-      toast.error('Erro ao atualizar dados da empresa');
-    } finally {
-      setLoading(false);
-    }
-  };
+    await saveCompany();
+  }, [saveCompany]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -181,7 +141,7 @@ export default function Settings() {
                       <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-4">
                         <div>
                           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                            Nome da Empresa
+                            Nome da Empresa <span className="text-red-500">*</span>
                           </label>
                           <div className="mt-1">
                             <input
@@ -190,10 +150,18 @@ export default function Settings() {
                               id="company-name"
                               value={companyData.name}
                               onChange={handleCompanyChange}
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                              className={classNames(
+                                "block w-full rounded-md shadow-sm sm:text-sm",
+                                companyErrors.name
+                                  ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                                  : "border-gray-300 focus:ring-primary focus:border-primary"
+                              )}
                               placeholder="Nome da sua empresa"
-                              disabled={loading}
+                              disabled={companyLoading}
                             />
+                            {companyErrors.name && (
+                              <p className="mt-1 text-sm text-red-600">{companyErrors.name}</p>
+                            )}
                           </div>
                         </div>
 
@@ -208,16 +176,24 @@ export default function Settings() {
                               id="company-website"
                               value={companyData.website}
                               onChange={handleCompanyChange}
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                              className={classNames(
+                                "block w-full rounded-md shadow-sm sm:text-sm",
+                                companyErrors.website
+                                  ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                                  : "border-gray-300 focus:ring-primary focus:border-primary"
+                              )}
                               placeholder="https://exemplo.com"
-                              disabled={loading}
+                              disabled={companyLoading}
                             />
+                            {companyErrors.website && (
+                              <p className="mt-1 text-sm text-red-600">{companyErrors.website}</p>
+                            )}
                           </div>
                         </div>
 
                         <div>
                           <label htmlFor="industry" className="block text-sm font-medium text-gray-700">
-                            Setor/Indústria
+                            Setor/Indústria <span className="text-red-500">*</span>
                           </label>
                           <div className="mt-1">
                             <input
@@ -226,16 +202,24 @@ export default function Settings() {
                               id="company-industry"
                               value={companyData.industry}
                               onChange={handleCompanyChange}
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                              className={classNames(
+                                "block w-full rounded-md shadow-sm sm:text-sm",
+                                companyErrors.industry
+                                  ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                                  : "border-gray-300 focus:ring-primary focus:border-primary"
+                              )}
                               placeholder="Ex: Tecnologia, Varejo, etc"
-                              disabled={loading}
+                              disabled={companyLoading}
                             />
+                            {companyErrors.industry && (
+                              <p className="mt-1 text-sm text-red-600">{companyErrors.industry}</p>
+                            )}
                           </div>
                         </div>
 
                         <div>
                           <label htmlFor="size" className="block text-sm font-medium text-gray-700">
-                            Tamanho da Empresa
+                            Tamanho da Empresa <span className="text-red-500">*</span>
                           </label>
                           <div className="mt-1">
                             <select
@@ -243,8 +227,13 @@ export default function Settings() {
                               id="company-size"
                               value={companyData.size}
                               onChange={handleCompanyChange}
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                              disabled={loading}
+                              className={classNames(
+                                "block w-full rounded-md shadow-sm sm:text-sm",
+                                companyErrors.size
+                                  ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                                  : "border-gray-300 focus:ring-primary focus:border-primary"
+                              )}
+                              disabled={companyLoading}
                             >
                               <option value="">Selecione...</option>
                               <option value="1-10">1-10 funcionários</option>
@@ -253,6 +242,9 @@ export default function Settings() {
                               <option value="201-500">201-500 funcionários</option>
                               <option value="501+">501+ funcionários</option>
                             </select>
+                            {companyErrors.size && (
+                              <p className="mt-1 text-sm text-red-600">{companyErrors.size}</p>
+                            )}
                           </div>
                         </div>
 
@@ -267,21 +259,32 @@ export default function Settings() {
                               rows={4}
                               value={companyData.description}
                               onChange={handleCompanyChange}
-                              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                              className={classNames(
+                                "block w-full rounded-md shadow-sm sm:text-sm",
+                                companyErrors.description
+                                  ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                                  : "border-gray-300 focus:ring-primary focus:border-primary"
+                              )}
                               placeholder="Descreva sua empresa..."
-                              disabled={loading}
+                              disabled={companyLoading}
                             />
+                            {companyErrors.description && (
+                              <p className="mt-1 text-sm text-red-600">{companyErrors.description}</p>
+                            )}
                           </div>
+                          <p className="mt-2 text-sm text-gray-500">
+                            Máximo de 500 caracteres
+                          </p>
                         </div>
                       </div>
 
                       <div className="flex justify-end">
                         <button
                           type="submit"
-                          disabled={loading}
+                          disabled={companyLoading}
                           className="inline-flex justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {loading ? (
+                          {companyLoading ? (
                             <>
                               <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -296,13 +299,18 @@ export default function Settings() {
                   </div>
                 </Tab.Panel>
 
+                {/* Social Media Settings */}
+                <Tab.Panel className="bg-white rounded-xl p-6 shadow-sm">
+                  <SocialMediaTab />
+                </Tab.Panel>
+
                 {/* Notification Settings */}
                 <Tab.Panel className="bg-white rounded-xl p-6 shadow-sm">
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-medium leading-6 text-gray-900">Preferências de Notificação</h3>
+                      <h3 className="text-lg font-medium leading-6 text-gray-900">Notificações</h3>
                       <p className="mt-1 text-sm text-gray-500">
-                        Escolha como e quando deseja receber notificações
+                        Configure suas preferências de notificação
                       </p>
                     </div>
 
@@ -342,9 +350,9 @@ export default function Settings() {
                 <Tab.Panel className="bg-white rounded-xl p-6 shadow-sm">
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-medium leading-6 text-gray-900">Segurança da Conta</h3>
+                      <h3 className="text-lg font-medium leading-6 text-gray-900">Segurança</h3>
                       <p className="mt-1 text-sm text-gray-500">
-                        Gerencie sua senha e configurações de autenticação
+                        Configure suas opções de segurança
                       </p>
                     </div>
 
@@ -384,9 +392,9 @@ export default function Settings() {
                 <Tab.Panel className="bg-white rounded-xl p-6 shadow-sm">
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-medium leading-6 text-gray-900">Configurações de Privacidade</h3>
+                      <h3 className="text-lg font-medium leading-6 text-gray-900">Privacidade</h3>
                       <p className="mt-1 text-sm text-gray-500">
-                        Controle quem pode ver seu perfil e interagir com suas postagens
+                        Configure suas opções de privacidade
                       </p>
                     </div>
 
