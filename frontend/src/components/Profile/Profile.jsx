@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { BsCamera } from 'react-icons/bs';
+import { toast } from 'react-hot-toast';
 
 export default function Profile() {
   const { user } = useAuth();
@@ -11,11 +12,37 @@ export default function Profile() {
   const [formData, setFormData] = useState({
     displayName: user?.displayName || '',
     bio: '',
-    company: '',
     website: '',
     location: '',
     phone: ''
   });
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user?.uid) return;
+      
+      try {
+        setLoading(true);
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setFormData(prev => ({
+            ...prev,
+            ...userData,
+            displayName: userData.displayName || user?.displayName || ''
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        toast.error('Erro ao carregar dados do perfil');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, [user]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -41,22 +68,27 @@ export default function Profile() {
         photoURL
       });
       
-      setLoading(false);
+      toast.success('Foto atualizada com sucesso!');
     } catch (error) {
       console.error('Error uploading photo:', error);
+      toast.error('Erro ao atualizar foto');
+    } finally {
       setLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     try {
       setLoading(true);
       const userRef = doc(db, 'users', user.uid);
       await updateDoc(userRef, formData);
-      setLoading(false);
+      toast.success('Perfil atualizado com sucesso!');
     } catch (error) {
       console.error('Error updating profile:', error);
+      toast.error('Erro ao atualizar perfil');
+    } finally {
       setLoading(false);
     }
   };
@@ -83,12 +115,12 @@ export default function Profile() {
                   {user?.photoURL ? (
                     <img
                       src={user.photoURL}
-                      alt={user.displayName || 'Profile'}
+                      alt={formData.displayName || 'Profile'}
                       className="h-full w-full object-cover"
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-gray-400 text-2xl">
-                      {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
+                      {formData.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
                     </div>
                   )}
                 </div>
@@ -104,13 +136,14 @@ export default function Profile() {
                     accept="image/*"
                     className="sr-only"
                     onChange={handlePhotoUpload}
+                    disabled={loading}
                   />
                 </label>
               </div>
             </div>
 
             {/* Campos do Formulário */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">
                   Nome
@@ -123,21 +156,7 @@ export default function Profile() {
                   onChange={handleInputChange}
                   className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   placeholder="Seu nome completo"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="company" className="block text-sm font-medium text-gray-700">
-                  Empresa
-                </label>
-                <input
-                  type="text"
-                  name="company"
-                  id="company"
-                  value={formData.company}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-                  placeholder="Nome da sua empresa"
+                  disabled={loading}
                 />
               </div>
 
@@ -153,10 +172,11 @@ export default function Profile() {
                   onChange={handleInputChange}
                   className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   placeholder="https://exemplo.com"
+                  disabled={loading}
                 />
               </div>
 
-              <div className="lg:col-span-3">
+              <div className="lg:col-span-2">
                 <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
                   Bio
                 </label>
@@ -168,6 +188,7 @@ export default function Profile() {
                   onChange={handleInputChange}
                   className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   placeholder="Conte um pouco sobre você..."
+                  disabled={loading}
                 />
               </div>
 
@@ -183,6 +204,7 @@ export default function Profile() {
                   onChange={handleInputChange}
                   className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   placeholder="Cidade, País"
+                  disabled={loading}
                 />
               </div>
 
@@ -198,6 +220,7 @@ export default function Profile() {
                   onChange={handleInputChange}
                   className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   placeholder="+55 (11) 99999-9999"
+                  disabled={loading}
                 />
               </div>
             </div>

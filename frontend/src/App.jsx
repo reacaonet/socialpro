@@ -15,6 +15,7 @@ import PrivateRoute from './components/Auth/PrivateRoute';
 import InstagramCallback from './components/Auth/InstagramCallback';
 import TwitterCallback from './components/Auth/TwitterCallback';
 import LinkedInCallback from './components/Auth/LinkedInCallback';
+import { Toaster } from 'react-hot-toast';
 
 // Configuração do router com flags futuras
 const router = createBrowserRouter(
@@ -40,6 +41,26 @@ const router = createBrowserRouter(
 export default function App() {
   return (
     <AuthProvider>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+          },
+          success: {
+            style: {
+              background: '#059669',
+            },
+          },
+          error: {
+            style: {
+              background: '#DC2626',
+            },
+          },
+        }}
+      />
       <RouterProvider router={router} />
     </AuthProvider>
   );
