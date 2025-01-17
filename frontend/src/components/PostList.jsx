@@ -69,70 +69,75 @@ export default function PostList() {
         Seus Posts
       </h2>
 
-      {posts.length === 0 ? (
-        <p className="text-gray-500 text-center py-4">
-          Você ainda não criou nenhum post
-        </p>
-      ) : (
-        <div className="space-y-6">
-          {posts.map((post) => (
-            <div
-              key={post.id}
-              className="border rounded-lg p-4 space-y-3"
-            >
-              {/* Conteúdo do post */}
-              <p className="text-gray-800">{post.content}</p>
+      <div className="space-y-4 sm:space-y-6">
+        {posts.length === 0 ? (
+          <p className="text-gray-500 text-center py-4">
+            Você ainda não criou nenhum post
+          </p>
+        ) : (
+          <div className="space-y-4 sm:space-y-6">
+            {posts.map((post) => (
+              <div
+                key={post.id}
+                className="border rounded-lg p-3 sm:p-4 space-y-3"
+              >
+                {/* Conteúdo do post */}
+                <p className="text-gray-800 text-sm sm:text-base">{post.content}</p>
 
-              {/* Status e data */}
-              <div className="flex items-center space-x-4 text-sm text-gray-500">
-                {post.status === 'scheduled' ? (
-                  <div className="flex items-center space-x-1">
-                    <BsClock className="w-4 h-4" />
-                    <span>Agendado para {formatDate(post.scheduledFor)}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-1">
-                    <BsCheckCircle className="w-4 h-4 text-green-500" />
-                    <span>Publicado em {formatDate(post.createdAt)}</span>
+                {/* Imagens do post */}
+                {post.images && post.images.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {post.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`Post image ${index + 1}`}
+                        className="w-full h-32 sm:h-40 object-cover rounded-lg"
+                      />
+                    ))}
                   </div>
                 )}
-              </div>
 
-              {/* Plataformas e status */}
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(post.platforms)
-                  .filter(([_, selected]) => selected)
-                  .map(([platform]) => {
+                {/* Status e data */}
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500">
+                  {post.status === 'scheduled' ? (
+                    <div className="flex items-center gap-1">
+                      <BsClock className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span>Agendado para {formatDate(post.scheduledFor)}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1">
+                      <BsCheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
+                      <span>Publicado em {formatDate(post.createdAt)}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Plataformas */}
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(post.platforms).map(([platform, status]) => {
                     const Icon = platformIcons[platform];
-                    const response = post.platformResponses?.[platform];
-                    
-                    return (
+                    return status ? (
                       <div
                         key={platform}
-                        className={`
-                          flex items-center space-x-1 px-2 py-1 rounded-full text-sm
-                          ${response?.success
-                            ? 'bg-green-100 text-green-800'
-                            : response?.error
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'}
-                        `}
+                        className="flex items-center gap-1 text-xs sm:text-sm bg-gray-100 text-gray-700 px-2 py-1 rounded-full"
                       >
-                        <Icon className="w-4 h-4" />
+                        <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
                         <span className="capitalize">{platform}</span>
-                        {response && (
-                          response.success
-                            ? <BsCheckCircle className="w-4 h-4 text-green-500" />
-                            : <BsXCircle className="w-4 h-4 text-red-500" />
-                        )}
+                        {post.platformStatus?.[platform] === 'error' ? (
+                          <BsXCircle className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
+                        ) : post.platformStatus?.[platform] === 'success' ? (
+                          <BsCheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
+                        ) : null}
                       </div>
-                    );
+                    ) : null;
                   })}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

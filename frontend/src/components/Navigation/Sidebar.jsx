@@ -12,13 +12,16 @@ import {
   BsChevronRight,
   BsFilePost,
   BsHash,
-  BsClock
+  BsClock,
+  BsList,
+  BsX
 } from 'react-icons/bs';
 
 export default function Sidebar() {
   const { user } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigation = [
     {
@@ -81,95 +84,110 @@ export default function Sidebar() {
   ];
 
   return (
-    <div
-      className={`
-        fixed left-0 z-40 h-screen bg-white border-r border-gray-200
-        transition-width duration-300 ease-in-out
-        ${collapsed ? 'w-16' : 'w-64'}
-      `}
-    >
-      {/* Toggle Button */}
+    <>
+      {/* Mobile menu button */}
       <button
-        onClick={() => setCollapsed(!collapsed)}
-        className="absolute -right-3 top-16 bg-white border border-gray-200 rounded-full p-1 shadow-sm"
+        type="button"
+        className="lg:hidden fixed top-3 left-4 z-50 inline-flex items-center justify-center rounded-md p-2 text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
       >
-        {collapsed ? (
-          <BsChevronRight className="w-4 h-4 text-gray-600" />
-        ) : (
-          <BsChevronLeft className="w-4 h-4 text-gray-600" />
-        )}
+        <span className="sr-only">Abrir menu</span>
+        <BsList className="h-6 w-6" aria-hidden="true" />
       </button>
 
-      <div className="flex flex-col h-full pt-20 pb-4">
-        {/* User Info */}
-        {!collapsed && (
-          <div className="px-4 mb-6">
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="h-10 w-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">
-                {user?.email[0].toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {user?.email}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  Plano Básico
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Sidebar Container */}
+      <div
+        className={`
+          fixed inset-y-0 left-0 z-40 transform bg-white transition-all duration-300 ease-in-out
+          border-r border-gray-200
+          ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${collapsed ? 'lg:w-20' : 'lg:w-64'}
+        `}
+      >
+        {/* Sidebar Header */}
+        <div className="flex items-center justify-between h-16 px-4">
+          <Link to="/dashboard" className="flex items-center space-x-3">
+            <svg className="h-8 w-8 text-primary" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v2h-2v-2zm0-2h2V7h-2v7z" />
+            </svg>
+            {!collapsed && <span className="text-xl font-bold text-gray-900">SocialPro</span>}
+          </Link>
+          
+          {/* Mobile close button */}
+          <button
+            className="lg:hidden p-2 rounded-md text-gray-500 hover:text-gray-600 hover:bg-gray-100"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <BsX className="h-6 w-6" />
+          </button>
+
+          {/* Desktop collapse button */}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden lg:block p-1 rounded-full hover:bg-gray-100"
+          >
+            {collapsed ? (
+              <BsChevronRight className="w-5 h-5 text-gray-500" />
+            ) : (
+              <BsChevronLeft className="w-5 h-5 text-gray-500" />
+            )}
+          </button>
+        </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-2 space-y-1">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className={`
-                group flex items-center px-2 py-2 text-sm font-medium rounded-md
-                ${item.current
-                  ? 'bg-primary text-white'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
-              `}
-            >
-              <item.icon
+        <nav className="flex flex-col h-[calc(100vh-4rem)] px-4 pb-4">
+          <div className="flex-1 space-y-1 overflow-y-auto">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
                 className={`
-                  ${collapsed ? 'w-6 h-6' : 'w-5 h-5'}
-                  ${item.current ? 'text-white' : 'text-gray-500 group-hover:text-gray-500'}
-                  ${collapsed ? 'mx-auto' : 'mr-3'}
+                  flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
+                  transition-colors duration-150 ease-in-out
+                  ${item.current
+                    ? 'bg-primary text-white'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  }
                 `}
-              />
-              {!collapsed && <span>{item.name}</span>}
-            </Link>
-          ))}
-        </nav>
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <item.icon className={`flex-shrink-0 w-5 h-5 ${item.current ? 'text-white' : 'text-gray-400'}`} />
+                {!collapsed && <span>{item.name}</span>}
+              </Link>
+            ))}
+          </div>
 
-        {/* Bottom Navigation */}
-        <div className="px-2 space-y-1">
-          {bottomNavigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className={`
-                group flex items-center px-2 py-2 text-sm font-medium rounded-md
-                ${item.current
-                  ? 'bg-primary text-white'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
-              `}
-            >
-              <item.icon
+          {/* Bottom Navigation */}
+          <div className="border-t border-gray-200 pt-4 space-y-1">
+            {bottomNavigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
                 className={`
-                  ${collapsed ? 'w-6 h-6' : 'w-5 h-5'}
-                  ${item.current ? 'text-white' : 'text-gray-500 group-hover:text-gray-500'}
-                  ${collapsed ? 'mx-auto' : 'mr-3'}
+                  flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
+                  transition-colors duration-150 ease-in-out
+                  ${item.current
+                    ? 'bg-primary text-white'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  }
                 `}
-              />
-              {!collapsed && <span>{item.name}</span>}
-            </Link>
-          ))}
-        </div>
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <item.icon className={`flex-shrink-0 w-5 h-5 ${item.current ? 'text-white' : 'text-gray-400'}`} />
+                {!collapsed && <span>{item.name}</span>}
+              </Link>
+            ))}
+          </div>
+        </nav>
       </div>
-    </div>
+
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-gray-600 bg-opacity-75 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+    </>
   );
 }

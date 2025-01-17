@@ -15,7 +15,8 @@ import {
   BsLink45Deg,
   BsEmojiSmile,
   BsGeoAlt,
-  BsHash
+  BsHash,
+  BsXCircle
 } from 'react-icons/bs';
 import EmojiPicker from 'emoji-picker-react';
 
@@ -207,255 +208,171 @@ export default function PostManager() {
     }
   };
 
-  const platforms = [
-    {
-      name: 'facebook',
-      icon: BsFacebook,
-      label: 'Facebook',
-      color: 'bg-blue-600',
-      hoverColor: 'hover:bg-blue-700'
-    },
-    {
-      name: 'instagram',
-      icon: BsInstagram,
-      label: 'Instagram',
-      color: 'bg-pink-600',
-      hoverColor: 'hover:bg-pink-700'
-    },
-    {
-      name: 'twitter',
-      icon: BsTwitter,
-      label: 'Twitter',
-      color: 'bg-sky-500',
-      hoverColor: 'hover:bg-sky-600'
-    },
-    {
-      name: 'linkedin',
-      icon: BsLinkedin,
-      label: 'LinkedIn',
-      color: 'bg-blue-700',
-      hoverColor: 'hover:bg-blue-800'
-    }
-  ];
-
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-6">
         Criar Post
       </h2>
       
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Área principal de conteúdo */}
-        <div className="space-y-4">
-          {/* Campo de texto principal */}
-          <div>
-            <label htmlFor="content" className="block text-sm font-medium text-gray-700">
-              Conteúdo
-            </label>
-            <div className="mt-1 relative">
-              <textarea
-                id="content"
-                rows={4}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                placeholder="O que você quer compartilhar?"
-                required
-              />
-              <div className="absolute bottom-2 right-2 flex space-x-2">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-2 text-white bg-primary hover:bg-primary-dark rounded-full transition-colors duration-200"
-                >
-                  <BsImage className="w-5 h-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="p-2 text-white bg-primary hover:bg-primary-dark rounded-full transition-colors duration-200"
-                >
-                  <BsEmojiSmile className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        {/* Área de texto do post */}
+        <div className="relative">
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="O que você quer compartilhar?"
+            className="w-full min-h-[120px] p-3 sm:p-4 border rounded-lg resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+          <div className="absolute right-2 bottom-2 flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <BsEmojiSmile className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+            </button>
           </div>
-
-          {/* Emoji Picker */}
           {showEmojiPicker && (
-            <div className="absolute z-10">
+            <div className="absolute right-0 bottom-12 z-10">
               <EmojiPicker onEmojiClick={handleEmojiClick} />
             </div>
           )}
+        </div>
 
-          {/* Preview de imagens */}
-          {imageURLs.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {imageURLs.map((url, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={url}
-                    alt={`Upload ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+        {/* Preview de imagens */}
+        {imageURLs.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {imageURLs.map((url, index) => (
+              <div key={index} className="relative group">
+                <img
+                  src={url}
+                  alt={`Preview ${index + 1}`}
+                  className="w-full h-32 object-cover rounded-lg"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <BsXCircle className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-          {/* Input de arquivo oculto */}
+        {/* Barra de ferramentas */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           <input
             type="file"
             ref={fileInputRef}
             onChange={handleImageUpload}
-            multiple
             accept="image/*"
+            multiple
             className="hidden"
           />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <BsImage className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Imagens</span>
+          </button>
 
-          {/* Link */}
-          <div>
-            <label htmlFor="link" className="block text-sm font-medium text-gray-700">
-              <div className="flex items-center space-x-2">
-                <BsLink45Deg className="w-5 h-5" />
-                <span>Link</span>
-              </div>
-            </label>
-            <input
-              type="url"
-              id="link"
-              value={link}
-              onChange={(e) => setLink(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-              placeholder="https://"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => {/* Implementar funcionalidade */}}
+            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <BsLink45Deg className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Link</span>
+          </button>
 
-          {/* Localização */}
-          <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
-              <div className="flex items-center space-x-2">
-                <BsGeoAlt className="w-5 h-5" />
-                <span>Localização</span>
-              </div>
-            </label>
-            <input
-              type="text"
-              id="location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-              placeholder="Adicionar localização"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => {/* Implementar funcionalidade */}}
+            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <BsGeoAlt className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Localização</span>
+          </button>
 
-          {/* Hashtags */}
-          <div>
-            <label htmlFor="hashtags" className="block text-sm font-medium text-gray-700">
-              <div className="flex items-center space-x-2">
-                <BsHash className="w-5 h-5" />
-                <span>Hashtags</span>
-              </div>
-            </label>
-            <input
-              type="text"
-              id="hashtags"
-              value={hashtags}
-              onChange={(e) => setHashtags(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-              placeholder="#exemplo #hashtag"
-            />
-          </div>
+          <button
+            type="button"
+            onClick={() => {/* Implementar funcionalidade */}}
+            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <BsHash className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Hashtags</span>
+          </button>
         </div>
 
         {/* Seleção de plataformas */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Selecione as redes sociais
-          </label>
-          <div className="grid grid-cols-2 gap-4">
-            {platforms.map((platform) => (
+        <div className="flex flex-wrap gap-2 sm:gap-4">
+          {Object.entries(selectedPlatforms).map(([platform, selected]) => {
+            const Icon = {
+              facebook: BsFacebook,
+              instagram: BsInstagram,
+              twitter: BsTwitter,
+              linkedin: BsLinkedin
+            }[platform];
+
+            return (
               <button
-                key={platform.name}
+                key={platform}
                 type="button"
-                onClick={() => handlePlatformToggle(platform.name)}
+                onClick={() => handlePlatformToggle(platform)}
                 className={`
-                  flex items-center justify-center space-x-2 px-4 py-2 rounded-lg
-                  transition-all duration-200
-                  ${selectedPlatforms[platform.name]
-                    ? platform.color + ' text-white'
-                    : 'bg-gray-100 text-gray-600 ' + platform.hoverColor.replace('hover:', 'hover:text-white')}
+                  flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-sm
+                  transition-colors
+                  ${selected
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }
                 `}
               >
-                <platform.icon className="w-5 h-5" />
-                <span>{platform.label}</span>
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="capitalize">{platform}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* Conteúdo específico para cada plataforma */}
-        {Object.entries(selectedPlatforms)
-          .filter(([_, selected]) => selected)
-          .map(([platform]) => (
-            <div key={platform}>
-              <label className="block text-sm font-medium text-gray-700">
-                Conteúdo específico para {platform}
-              </label>
-              <textarea
-                rows={2}
-                value={platformSpecificContent[platform].content}
-                onChange={(e) => handlePlatformContentChange(platform, e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                placeholder={`Deixe em branco para usar o conteúdo principal`}
-              />
-            </div>
-          ))}
-
         {/* Agendamento */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <div className="flex items-center space-x-2">
-              <BsClock className="w-5 h-5" />
-              <span>Agendar post</span>
-            </div>
-          </label>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <BsClock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
           <input
             type="datetime-local"
             value={schedule}
             onChange={(e) => setSchedule(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+            className="flex-1 px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
           />
+        </div>
+
+        {/* Botão de publicar */}
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            disabled={loading}
+            className={`
+              px-4 py-2 rounded-lg text-white text-sm sm:text-base font-medium
+              ${loading
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-primary hover:bg-primary-dark'
+              }
+            `}
+          >
+            {loading ? 'Publicando...' : 'Publicar'}
+          </button>
         </div>
 
         {/* Mensagem de erro */}
         {error && (
-          <div className="text-red-600 text-sm">
+          <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg">
             {error}
           </div>
         )}
-
-        {/* Botão de submit */}
-        <button
-          type="submit"
-          disabled={loading}
-          className={`
-            w-full flex items-center justify-center px-4 py-2 border border-transparent
-            rounded-md shadow-sm text-base font-medium text-white bg-primary
-            hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2
-            focus:ring-primary transition-colors duration-200
-            ${loading ? 'opacity-50 cursor-not-allowed' : ''}
-          `}
-        >
-          {loading ? 'Publicando...' : schedule ? 'Agendar Post' : 'Publicar Agora'}
-        </button>
       </form>
     </div>
   );

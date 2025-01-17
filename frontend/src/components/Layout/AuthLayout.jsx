@@ -9,8 +9,10 @@ export default function AuthLayout({ children }) {
       <AuthNavbar />
       <Sidebar />
       <main className="lg:pl-64 pt-16">
-        <div className="w-[90%] mx-auto py-6">
-          {children}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="max-w-full mx-auto">
+            {children}
+          </div>
         </div>
         <Footer />
       </main>
