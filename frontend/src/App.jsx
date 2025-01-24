@@ -1,10 +1,8 @@
 import { 
-  BrowserRouter as Router, 
-  Routes, 
-  Route,
   createRoutesFromElements,
   createBrowserRouter,
-  RouterProvider 
+  RouterProvider,
+  Route
 } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import Dashboard from './components/Dashboard';
@@ -17,7 +15,6 @@ import TwitterCallback from './components/Auth/TwitterCallback';
 import LinkedInCallback from './components/Auth/LinkedInCallback';
 import { Toaster } from 'react-hot-toast';
 
-// Configuração do router com flags futuras
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
@@ -38,7 +35,7 @@ const router = createBrowserRouter(
   }
 );
 
-export default function App() {
+const App = () => {
   return (
     <AuthProvider>
       <Toaster 
@@ -49,19 +46,11 @@ export default function App() {
             background: '#333',
             color: '#fff',
           },
-          success: {
-            style: {
-              background: '#059669',
-            },
-          },
-          error: {
-            style: {
-              background: '#DC2626',
-            },
-          },
         }}
       />
       <RouterProvider router={router} />
     </AuthProvider>
   );
 }
+
+export default App;

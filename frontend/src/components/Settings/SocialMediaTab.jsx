@@ -4,6 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { initFacebookSDK, loginWithFacebook } from '../../services/facebook';
 import { initLinkedInAuth } from '../../services/linkedin';
+import { initInstagramAuth } from '../../services/instagram';
 import { toast } from 'react-hot-toast';
 import {
   BsFacebook,
@@ -59,7 +60,7 @@ export default function SocialMediaTab() {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          setConnections(userData.socialConnections || {});
+          setConnections(userData.connections || {});
         }
       } catch (error) {
         console.error('Error loading social connections:', error);
@@ -78,6 +79,9 @@ export default function SocialMediaTab() {
         case 'facebook':
           await initFacebookSDK();
           await loginWithFacebook();
+          break;
+        case 'instagram':
+          window.location.href = initInstagramAuth();
           break;
         case 'linkedin':
           window.location.href = initLinkedInAuth();
@@ -102,6 +106,8 @@ export default function SocialMediaTab() {
         return connection.pages?.length > 0
           ? `${connection.pages.length} página${connection.pages.length > 1 ? 's' : ''} conectada${connection.pages.length > 1 ? 's' : ''}`
           : 'Conectado';
+      case 'instagram':
+        return connection.username ? `@${connection.username}` : 'Conectado';
       case 'linkedin':
         return connection.companyPages?.length > 0
           ? `${connection.companyPages.length} página${connection.companyPages.length > 1 ? 's' : ''} conectada${connection.companyPages.length > 1 ? 's' : ''}`
@@ -149,36 +155,29 @@ export default function SocialMediaTab() {
                     <h3 className="text-lg font-medium text-gray-900">
                       {network.name}
                     </h3>
-                    <p className="text-sm text-gray-500">
-                      {isConnected ? status : 'Não conectado'}
-                    </p>
+                    {status && (
+                      <p className="text-sm text-gray-500">{status}</p>
+                    )}
                   </div>
                 </div>
 
-                <p className="mt-4 text-sm text-gray-600">
+                <p className="mt-2 text-sm text-gray-500">
                   {network.description}
                 </p>
 
-                <div className="mt-6">
+                <div className="mt-4">
                   <button
                     onClick={() => handleConnect(network)}
                     disabled={loading}
-                    className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-                    style={{ 
-                      backgroundColor: network.color,
-                      opacity: loading ? 0.7 : 1
-                    }}
+                    className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white 
+                      ${isConnected ? 'bg-gray-600 hover:bg-gray-700' : 'bg-blue-600 hover:bg-blue-700'}
+                      focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                      disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {loading ? (
-                      <>
-                        <BsArrowRepeat className="animate-spin -ml-1 mr-2 h-4 w-4" />
-                        Processando...
-                      </>
-                    ) : isConnected ? (
-                      'Reconectar'
-                    ) : (
-                      'Conectar'
-                    )}
+                      <BsArrowRepeat className="w-4 h-4 mr-2 animate-spin" />
+                    ) : null}
+                    {isConnected ? 'Reconectar' : 'Conectar'}
                   </button>
                 </div>
               </div>

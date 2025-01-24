@@ -1,22 +1,28 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'firebase-vendor': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
-        },
-      },
-    },
-  },
+  plugins: [
+    react({
+      include: "**/*.{jsx,tsx}",
+      babel: {
+        plugins: [
+          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+        ]
+      }
+    })
+  ],
   server: {
     port: 3000,
+    open: true
   },
-});
+  build: {
+    outDir: 'dist',
+    sourcemap: true
+  },
+  resolve: {
+    alias: {
+      '@': '/src'
+    }
+  }
+})

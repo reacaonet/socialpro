@@ -1,21 +1,20 @@
-// Substitua com suas credenciais do LinkedIn
+// LinkedIn API Configuration
 const LINKEDIN_CLIENT_ID = import.meta.env.VITE_LINKEDIN_CLIENT_ID;
 const LINKEDIN_CLIENT_SECRET = import.meta.env.VITE_LINKEDIN_CLIENT_SECRET;
 const REDIRECT_URI = import.meta.env.VITE_LINKEDIN_REDIRECT_URI || 'https://socialpro-wine.vercel.app/auth/linkedin/callback';
 
-// URLs do LinkedIn
+// LinkedIn API Endpoints
 const LINKEDIN_AUTH_URL = 'https://www.linkedin.com/oauth/v2/authorization';
 const LINKEDIN_TOKEN_URL = 'https://www.linkedin.com/oauth/v2/accessToken';
 const LINKEDIN_API_URL = 'https://api.linkedin.com/v2';
 
-// Gera um estado aleatório para segurança
-const generateState = () => {
-  return Math.random().toString(36).substring(2, 15);
-};
-
+/**
+ * Inicia o processo de autenticação do LinkedIn
+ * @returns {string} URL de autorização
+ */
 export const initLinkedInAuth = () => {
-  const state = generateState();
-  localStorage.setItem('linkedin_state', state);
+  const state = Math.random().toString(36).substring(2, 15);
+  sessionStorage.setItem('linkedin_auth_state', state);
 
   const params = new URLSearchParams({
     response_type: 'code',
@@ -28,6 +27,11 @@ export const initLinkedInAuth = () => {
   return `${LINKEDIN_AUTH_URL}?${params.toString()}`;
 };
 
+/**
+ * Obtém o token de acesso usando o código de autorização
+ * @param {string} code - Código de autorização
+ * @returns {Promise<Object>} Dados do token
+ */
 export const getLinkedInToken = async (code) => {
   const params = new URLSearchParams({
     grant_type: 'authorization_code',
@@ -59,10 +63,15 @@ export const getLinkedInToken = async (code) => {
   }
 };
 
+/**
+ * Obtém informações do usuário do LinkedIn
+ * @param {string} accessToken - Token de acesso
+ * @returns {Promise<Object>} Informações do usuário
+ */
 export const getLinkedInUserInfo = async (accessToken) => {
   try {
     // Obtém informações básicas do perfil
-    const profileResponse = await fetch(`${LINKEDIN_API_URL}/me`, {
+    const profileResponse = await fetch(`${LINKEDIN_API_URL}/me?projection=(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))`, {
       headers: {
         'Authorization': `Bearer ${accessToken}`
       }
@@ -75,35 +84,30 @@ export const getLinkedInUserInfo = async (accessToken) => {
       }
     });
 
-    // Obtém foto do perfil
-    const profilePictureResponse = await fetch(`${LINKEDIN_API_URL}/me?projection=(profilePicture(displayImage~:playableStreams))`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
-      }
-    });
-
-    if (!profileResponse.ok || !emailResponse.ok || !profilePictureResponse.ok) {
+    if (!profileResponse.ok || !emailResponse.ok) {
       throw new Error('Falha ao obter informações do usuário do LinkedIn');
     }
 
     const profileData = await profileResponse.json();
     const emailData = await emailResponse.json();
-    const pictureData = await profilePictureResponse.json();
 
     // Pega a URL da maior imagem disponível
     let profilePictureUrl = null;
-    if (pictureData.profilePicture?.['displayImage~']?.elements) {
-      const images = pictureData.profilePicture['displayImage~'].elements;
+    if (profileData.profilePicture?.['displayImage~']?.elements) {
+      const images = profileData.profilePicture['displayImage~'].elements;
       const largestImage = images[images.length - 1];
       profilePictureUrl = largestImage?.identifiers[0]?.identifier;
     }
+
+    // Extrai o email do usuário
+    const email = emailData.elements?.[0]?.['handle~']?.emailAddress;
 
     return {
       id: profileData.id,
       firstName: profileData.localizedFirstName,
       lastName: profileData.localizedLastName,
-      email: emailData.elements[0]['handle~'].emailAddress,
-      profilePicture: profilePictureUrl
+      email: email,
+      profilePictureUrl: profilePictureUrl
     };
   } catch (error) {
     console.error('Error getting LinkedIn user info:', error);
@@ -111,63 +115,75 @@ export const getLinkedInUserInfo = async (accessToken) => {
   }
 };
 
+/**
+ * Obtém as páginas da empresa do usuário
+ * @param {string} accessToken - Token de acesso
+ * @returns {Promise<Array>} Lista de páginas da empresa
+ */
 export const getLinkedInCompanyPages = async (accessToken) => {
   try {
-    const response = await fetch(`${LINKEDIN_API_URL}/organizationalEntityAcls?q=roleAssignee&role=ADMINISTRATOR`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'X-Restli-Protocol-Version': '2.0.0'
+    // Primeiro, obtém a lista de organizações administradas pelo usuário
+    const response = await fetch(
+      `${LINKEDIN_API_URL}/organizationalEntityAcls?q=roleAssignee&role=ADMINISTRATOR&projection=(elements*(organizationalTarget~(localizedName,vanityName,logoV2(original~:playableStreams),id,followersCount)))`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
       }
-    });
+    );
 
     if (!response.ok) {
-      throw new Error('Falha ao obter páginas do LinkedIn');
+      throw new Error('Falha ao obter páginas da empresa do LinkedIn');
     }
 
     const data = await response.json();
-    
-    // Obtém detalhes de cada organização
-    const organizations = await Promise.all(
-      data.elements.map(async (element) => {
-        const orgId = element.organizationalTarget.split(':')[3];
-        const orgResponse = await fetch(`${LINKEDIN_API_URL}/organizations/${orgId}`, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`
-          }
-        });
-        
-        if (!orgResponse.ok) return null;
-        
-        const orgData = await orgResponse.json();
-        return {
-          id: orgId,
-          name: orgData.localizedName,
-          vanityName: orgData.vanityName,
-          logoUrl: orgData.logoV2?.['original~']?.elements[0]?.identifiers[0]?.identifier
-        };
-      })
-    );
+    const pages = data.elements?.map(element => {
+      const org = element['organizationalTarget~'];
+      let logoUrl = null;
+      
+      if (org.logoV2?.['original~']?.elements) {
+        const images = org.logoV2['original~'].elements;
+        const largestImage = images[images.length - 1];
+        logoUrl = largestImage?.identifiers[0]?.identifier;
+      }
 
-    return organizations.filter(org => org !== null);
+      return {
+        id: org.id,
+        localizedName: org.localizedName,
+        vanityName: org.vanityName,
+        logoUrl: logoUrl,
+        followersCount: org.followersCount || 0
+      };
+    }) || [];
+
+    return pages;
   } catch (error) {
     console.error('Error getting LinkedIn company pages:', error);
     throw error;
   }
 };
 
+/**
+ * Cria uma postagem no LinkedIn
+ * @param {string} accessToken - Token de acesso
+ * @param {Object} postData - Dados da postagem
+ * @param {string} postData.text - Texto da postagem
+ * @param {string} [postData.organizationId] - ID da organização (opcional)
+ * @returns {Promise<Object>} Resultado da postagem
+ */
 export const createLinkedInPost = async (accessToken, { text, organizationId = null }) => {
   try {
     const author = organizationId 
       ? `urn:li:organization:${organizationId}`
-      : `urn:li:person:${(await getLinkedInUserInfo(accessToken)).id}`;
+      : 'urn:li:person:' + (await getLinkedInUserInfo(accessToken)).id;
 
     const postData = {
-      author,
+      author: author,
       lifecycleState: 'PUBLISHED',
       specificContent: {
         'com.linkedin.ugc.ShareContent': {
           shareCommentary: {
-            text
+            text: text
           },
           shareMediaCategory: 'NONE'
         }
@@ -192,8 +208,7 @@ export const createLinkedInPost = async (accessToken, { text, organizationId = n
       throw new Error(errorData.message || 'Falha ao criar post no LinkedIn');
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Error creating LinkedIn post:', error);
     throw error;
